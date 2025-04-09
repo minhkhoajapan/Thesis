@@ -1,3 +1,4 @@
-PINBSN24SJun.txt
+*.txt
+*.xlsx
 env/
 .env

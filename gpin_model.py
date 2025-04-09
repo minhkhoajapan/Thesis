@@ -31,11 +31,9 @@ class GPINModel():
         pass
 
 
-def _lam(r, p, size = None):
-    r"""
-        Compute $\lambda_{NI} from shape r and scale p/(1-p) params
-    """
-    return np.nan_to_num(np.random.gamma(r, p/(1-p), size)) 
+def _lam(r,p,size=None):
+    "Compute lambda_{NI} from shape r and scale p/(1-p) params"
+    return np.nan_to_num(np.random.gamma(r,p/(1-p),size))
 
 def _lf(th_b, th_s, r, p, n_buys, n_sells, pdenom=1):
     res =  log(th_b)*n_buys+log(1-th_s)*n_sells - lfact(n_buys) - lfact(n_sells) - gammaln(r) + log(1-p)*r + log(p)*(n_buys+n_sells) + gammaln(r+n_buys+n_sells) - log(pdenom)*r - log(pdenom)*(n_buys+n_sells)
@@ -47,9 +45,9 @@ def _ll(a, r, p, eta, d, th, n_buys, n_sells):
                    log(a*(1-d))+_lf(th, th-eta, r, p, n_buys, n_sells, 1+eta*p)])
 
 def compute_alpha(a, r, p, eta, d, th, n_buys, n_sells):
-    r"""
-        Compute the conditional alpha given parameters, buys, and sells.
-    """
+    '''Compute the conditional alpha given parameters, buys, and sells.
+
+    '''
     ys = _ll(a, r, p, eta, d, th, n_buys, n_sells)
 
     ymax = ys.max(axis=0)
@@ -59,16 +57,10 @@ def compute_alpha(a, r, p, eta, d, th, n_buys, n_sells):
     return alpha
 
 def nbm_ll(theta, x):
-    r"""
-        Likelihood function of turnover (Buy + Sell)
-        utilize in the estimations of alpha, eta, p and r
-    """
     a,p,eta,r = theta
     q = (p+eta*p)/(1+eta*p)
-
     def _nbl(a,p,r,x):
         return log(a)+log(1-p)*r+log(p)*x-lfact(x)-gammaln(r)+gammaln(r+x)
-    
     ll = np.array([_nbl(1-a,p,r,x),_nbl(a,q,r,x)])
     return sum(logsumexp(ll,axis=0))
 
@@ -93,7 +85,6 @@ def loglik(theta, n_buys, n_sells):
 def fit(n_buys, n_sells, starts=10, maxiter=100, 
         a=None, r=None, p=None, eta=None, th=None, d=None, 
         se=None, winsorize_turn=False, **kwargs):
-    import pandas as pd
     from statsmodels.regression.linear_model import OLS
     
     turn = n_buys + n_sells
